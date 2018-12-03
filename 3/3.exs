@@ -1,13 +1,28 @@
 #!/usr/bin/env elixir
 defmodule AOC2018.Day3 do
   def part_one do
-    [path | _ ] = System.argv()
-
-    File.stream!(path)
-    |> Stream.map(&parse_line/1)
+    stream_input()
     |> calculate_overlaps()
     |> IO.inspect(label: "part 1")
   end
+
+  def part_two() do
+    coords = stream_input()
+    |> Enum.map(&spec2coords/1)
+
+    Enum.find(coords, fn({_, c1}) -> !Enum.any?(coords, fn({_, c2})-> c1 != c2 && overlap?(c1, c2) end) end)
+    |> IO.inspect(label: "part 2")
+  end
+
+  defp spec2coords({id, {top, left}, {height, width}}) do
+    {id, {{top, left}, {top + height, left + width}}}
+  end
+
+  defp overlap?({{x1, y1}, {x2, y2}}, {{x3, y3}, {x4, y4}}) when x3 > x2, do: false
+  defp overlap?({{x1, y1}, {x2, y2}}, {{x3, y3}, {x4, y4}}) when y4 < y1, do: false
+  defp overlap?({{x1, y1}, {x2, y2}}, {{x3, y3}, {x4, y4}}) when x4 < x1, do: false
+  defp overlap?({{x1, y1}, {x2, y2}}, {{x3, y3}, {x4, y4}}) when y3 > y2, do: false
+  defp overlap?(_, _), do: true
 
   def calculate_overlaps(stream) do
     Enum.reduce(stream, %{}, &add_overlap/2)
@@ -48,6 +63,14 @@ defmodule AOC2018.Day3 do
     |> Enum.map(&String.to_integer/1)
     {x, y}
   end
+
+  defp stream_input do
+    [path | _ ] = System.argv()
+
+    File.stream!(path)
+    |> Stream.map(&parse_line/1)
+  end
 end
 
 AOC2018.Day3.part_one()
+AOC2018.Day3.part_two()
